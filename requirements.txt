@@ -1,2 +1,4 @@
-qiskit-aqua==0.8.1
-dwave-system==1.2.1
+qiskit==2.5.0
+qiskit-algorithms==0.4.0
+qiskit-optimization==0.7.0
+dwave-system==1.35.0

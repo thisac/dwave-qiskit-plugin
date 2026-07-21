@@ -13,15 +13,16 @@
 # limitations under the License.
 
 import logging
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union
 
 import numpy as np
 import dimod
 from dwave.system import DWaveSampler, AutoEmbeddingComposite
 
-from qiskit.aqua.operators import OperatorBase, LegacyBaseOperator, StateFn
-from qiskit.aqua.algorithms import MinimumEigensolver, MinimumEigensolverResult
-from qiskit.optimization.problems import QuadraticProgram
+from qiskit.quantum_info import Statevector
+from qiskit.quantum_info.operators.base_operator import BaseOperator
+from qiskit_algorithms import MinimumEigensolver, MinimumEigensolverResult
+from qiskit_optimization import QuadraticProgram
 
 __all__ = ['DWaveMinimumEigensolver']
 
@@ -62,9 +63,8 @@ class DWaveMinimumEigensolver(MinimumEigensolver):
     """
 
     def __init__(self,
-                 operator: Union[OperatorBase, LegacyBaseOperator] = None,
-                 aux_operators: Optional[List[Optional[Union[OperatorBase,
-                                                             LegacyBaseOperator]]]] = None,
+                 operator: Optional[BaseOperator] = None,
+                 aux_operators: Optional[List[Optional[BaseOperator]]] = None,
                  sampler: dimod.Sampler = None,
                  num_reads: int = 100,
                  ) -> None:
@@ -102,12 +102,12 @@ class DWaveMinimumEigensolver(MinimumEigensolver):
                                   vartype=dimod.BINARY)
 
     @property
-    def operator(self) -> Optional[OperatorBase]:
+    def operator(self) -> Optional[BaseOperator]:
         return self._operator
 
     @operator.setter
     def operator(self,
-                 operator: Union[OperatorBase, LegacyBaseOperator]) -> None:
+                 operator: BaseOperator) -> None:
         """Convert an Ising Hamiltonian operator to a binary quadratic model
         suitable for submission to a D-Wave sampler.
 
@@ -130,16 +130,14 @@ class DWaveMinimumEigensolver(MinimumEigensolver):
             logger.debug('BQM set to %s', self._bqm)
 
     @property
-    def aux_operators(self) -> Optional[List[Optional[OperatorBase]]]:
+    def aux_operators(self) -> Optional[List[Optional[BaseOperator]]]:
         return self._aux_operators
 
     @aux_operators.setter
     def aux_operators(self,
                       aux_operators: Optional[
-                          Union[OperatorBase,
-                                LegacyBaseOperator,
-                                List[Optional[Union[OperatorBase,
-                                                    LegacyBaseOperator]]]]]) -> None:
+                          Union[BaseOperator,
+                                List[Optional[BaseOperator]]]]) -> None:
         if aux_operators is None:
             aux_operators = []
         if not isinstance(aux_operators, list):
@@ -176,12 +174,13 @@ class DWaveMinimumEigensolver(MinimumEigensolver):
 
     def compute_minimum_eigenvalue(
             self,
-            operator: Optional[Union[OperatorBase, LegacyBaseOperator]] = None,
-            aux_operators: \
-                Optional[List[Optional[Union[OperatorBase,
-                                             LegacyBaseOperator]]]] = None
+            operator: Optional[BaseOperator] = None,
+            aux_operators: Optional[List[Optional[BaseOperator]]] = None
     ) -> MinimumEigensolverResult:
-        super().compute_minimum_eigenvalue(operator, aux_operators)
+        if operator is not None:
+            self.operator = operator
+        if aux_operators is not None:
+            self.aux_operators = aux_operators
         return self._run()
 
     def _sample(self) -> dimod.SampleSet:
@@ -193,12 +192,12 @@ class DWaveMinimumEigensolver(MinimumEigensolver):
     @staticmethod
     def _stringify(sample: np.ndarray) -> str:
         """Convert numpy.ndarray vector of 0/1 int values to a bit string."""
-        return ''.join(map(str, sample))
+        return ''.join(map(str, sample[::-1]))
 
-    def _eval_aux_operators(self, state) -> np.ndarray:
+    def _eval_aux_operators(self, bitstring: str) -> np.ndarray:
         """Evaluate all aux_operators on the input state."""
-        # NOTE: for lack of better specs, we follow the NumPyEigensolver format
-        values = [(StateFn(operator, is_measurement=True).eval(state).real, 0)
+        state = Statevector.from_label(bitstring)
+        values = [(state.expectation_value(operator).real, 0)
                   for operator in self._aux_operators]
         return np.array(values, dtype=object)
 
@@ -246,15 +245,13 @@ class DWaveMinimumEigensolver(MinimumEigensolver):
         # include all samples for inspection
         result.sampleset = sampleset
 
-        logger.debug('run result: %r', result.data)
+        logger.debug('run result: %r', result)
 
         return result
 
     def run(self,
-            operator: Optional[Union[OperatorBase, LegacyBaseOperator]] = None,
-            aux_operators: \
-                Optional[List[Optional[Union[OperatorBase,
-                                             LegacyBaseOperator]]]] = None
+            operator: Optional[BaseOperator] = None,
+            aux_operators: Optional[List[Optional[BaseOperator]]] = None
     ) -> MinimumEigensolverResult:
         """Obtain ground state(s) of an Ising Hamiltonian using D-Wave's QPU.
         """

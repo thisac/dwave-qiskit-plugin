@@ -2,9 +2,9 @@
 
 Enables [Qiskit](https://qiskit.org/) users to obtain ground state(s) of Ising Hamiltonians using [D-Wave](https://www.dwavesys.com/)'s QPU available via [Leap](https://cloud.dwavesys.com/).
 
-The package provides an implementation of Qiskit's [`MinimumEigensolver`](https://qiskit.org/documentation/stubs/qiskit.aqua.algorithms.MinimumEigensolver.html)
+The package provides an implementation of Qiskit's `MinimumEigensolver`
 interface (available as `DWaveMinimumEigensolver`) which can be used directly on qubit operators, or via
-`qikist.optimization`'s [`MinimumEigenOptimizer`](https://qiskit.org/documentation/stubs/qiskit.optimization.algorithms.MinimumEigenOptimizer.html).
+`qiskit-optimization`'s `MinimumEigenOptimizer`.
 
 
 ## Examples
@@ -15,8 +15,8 @@ with [`MinimumEigenOptimizer`](https://qiskit.org/documentation/stubs/qiskit.opt
 using `DWaveMinimumEigensolver`:
 
 ```python
->>> from qiskit.optimization import QuadraticProgram
->>> from qiskit.optimization.algorithms import MinimumEigenOptimizer
+>>> from qiskit_optimization import QuadraticProgram
+>>> from qiskit_optimization.algorithms import MinimumEigenOptimizer
 >>> from dwave.plugins.qiskit import DWaveMinimumEigensolver
 ...
 >>> # Construct a simple quadratic program
@@ -41,8 +41,7 @@ status: SUCCESS
 Solve a 6-city TSP (or [some other Ising model](https://qiskit.org/documentation/apidoc/qiskit.optimization.applications.ising.html#module-qiskit.optimization.applications.ising)).
 
 ```python
->>> from qiskit.optimization.applications.ising import tsp
->>> from qiskit.optimization.applications.ising.common import sample_most_likely
+>>> from qiskit_optimization.applications import tsp
 >>> from dwave.plugins.qiskit import DWaveMinimumEigensolver
 ...
 >>> six_cities_tsp = tsp.random_tsp(6, seed=123)
@@ -69,30 +68,16 @@ True
 For comparison, trying this on `NumPyMinimumEigensolver` produces:
 
 ```python
->>> from qiskit.aqua.algorithms import NumPyMinimumEigensolver
+>>> from qiskit_algorithms import NumPyMinimumEigensolver
 >>> result = NumPyMinimumEigensolver().compute_minimum_eigenvalue(operator)
 # snipped for brevity
 MemoryError: Unable to allocate 512. GiB for an array with shape (68719476737,) and data type uint64
 ```
 
-and trying with `QAOA` backed with "qasm_simulator" produces:
-
-```python
->>> from qiskit import BasicAer
->>> from qiskit.aqua import QuantumInstance
->>> from qiskit.aqua.algorithms import QAOA
-
->>> quantum_instance = QuantumInstance(BasicAer.get_backend('qasm_simulator'))
->>> qaoa_mes = QAOA(quantum_instance=quantum_instance, initial_point=[0., 0.])
->>> result = qaoa_mes.compute_minimum_eigenvalue(operator)
-# snipped for brevity
-BasicAerError: 'Number of qubits 36 is greater than maximum (24) for "qasm_simulator".'
-```
-
 ## Installation
 
-Compatible with Python 3.6+, [Qiskit](https://github.com/Qiskit/qiskit) 0.23.0+,
-and [Ocean](https://github.com/dwavesystems/dwave-ocean-sdk) 3.1.0+.
+Compatible with Python 3.10+, `qiskit` 2.5.0+, `qiskit-algorithms` 0.4.0+,
+`qiskit-optimization` 0.7.0+, and `dwave-system` 1.35.0+.
 
 ```bash
 pip install dwave-qiskit-plugin
