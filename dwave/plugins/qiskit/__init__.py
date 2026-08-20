@@ -17,3 +17,5 @@ from .minimum_eigen_solvers import DWaveMinimumEigensolver
 __all__ = [
     'DWaveMinimumEigensolver',
 ]
+
+__version__ = '0.1.0'

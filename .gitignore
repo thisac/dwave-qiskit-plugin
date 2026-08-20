@@ -5,7 +5,9 @@ htmlcov/
 coverage.xml
 
 env/
+.venv/
 build/
 dist/
 wheels/
+*.egg-info/
 docs/**/generated/
