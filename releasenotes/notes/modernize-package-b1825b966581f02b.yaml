@@ -1,0 +1,13 @@
+---
+upgrade:
+  - |
+    Packaging is modernized, using ``pyproject.toml``, per the PPA `packaging
+    guidelines <https://packaging.python.org/en/latest/tutorials/packaging-projects/>`_.
+    .
+  - |
+    `Use dependency groups <https://peps.python.org/pep-0735/>`_, defined in
+    ``pyproject.toml``, instead of ``requirements.txt`` and
+    ``tests/requirements.txt``
+  - |
+    Switch to using native (PEP 420) namespace package conventions instead of
+    using legacy ``pkgutil``-style ``__init__.py`` files.
