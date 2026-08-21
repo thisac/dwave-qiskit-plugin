@@ -43,8 +43,8 @@ dev = [
     {include-group = "changelog"},
 ]
 test = [
+    "coverage[toml]",
     "parameterized==0.9.0",
-    "coverage==7.15.4",
     "codecov==2.1.13",
 ]
 
